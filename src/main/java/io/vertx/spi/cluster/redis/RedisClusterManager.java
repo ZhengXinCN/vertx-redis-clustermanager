@@ -217,7 +217,7 @@ public class RedisClusterManager implements ClusterManager, NodeInfoCatalogListe
 
   private String logId(String nodeId) {
     try (var ignored = lock(lock)) {
-      return nodeId.equals(this.nodeId) ? "todo (self)" : "todo";
+      return nodeId.equals(this.nodeId) ? String.format("%s (self)", nodeId) : nodeId;
     }
   }
 

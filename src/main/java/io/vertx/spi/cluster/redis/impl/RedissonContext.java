@@ -13,9 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import jodd.util.concurrent.ThreadFactoryBuilder;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -65,11 +68,6 @@ public final class RedissonContext {
       redisConfig.useClusterServers().setNodeAddresses(config.getEndpoints());
     } else if (config.getClientType() == ClientType.REPLICATED) {
       redisConfig.useReplicatedServers().setNodeAddresses(config.getEndpoints());
-    } else if (config.getClientType() == ClientType.MASTER_SLAVE) {
-      //TODO: slave node address
-      redisConfig.useMasterSlaveServers().setMasterAddress(config.getEndpoints().get(0));
-    } else if (config.getClientType() == ClientType.SENTINEL_MASTER_SLAVE) {
-      redisConfig.useSentinelServers().setSentinelAddresses(config.getEndpoints());
     } else {
      throw new IllegalStateException("ClientType not support: " + config.getClientType());
     }
@@ -97,6 +95,11 @@ public final class RedissonContext {
     try (var ignored = lock(lock)) {
       if (client == null) {
         client = Redisson.create(redisConfig);
+        final ThreadFactory threadFactory = ThreadFactoryBuilder.create()
+                .setNameFormat("vertx-redis-service-release-lock-thread").get();
+        lockReleaseExec = Executors.newCachedThreadPool(threadFactory);
+
+// TODO use follow code when use Java21
 //        lockReleaseExec =
 //            Executors.newCachedThreadPool(
 //                Thread.ofPlatform().name("vertx-redis-service-release-lock-thread", 1).factory());
