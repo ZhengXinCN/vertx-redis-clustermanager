@@ -65,6 +65,14 @@ public final class RedissonRedisInstance implements RedisInstance {
   public boolean ping() {
     if (config.getClientType() == ClientType.STANDALONE) {
       return redisson.getRedisNodes(RedisNodes.SINGLE).pingAll();
+    } else if (config.getClientType() == ClientType.CLUSTER) {
+      return redisson.getRedisNodes(RedisNodes.CLUSTER).pingAll();
+    } else if (config.getClientType() == ClientType.REPLICATED) {
+      return redisson.getRedisNodes(RedisNodes.CLUSTER).pingAll();
+    } else if (config.getClientType() == ClientType.MASTER_SLAVE) {
+      return redisson.getRedisNodes(RedisNodes.MASTER_SLAVE).pingAll();
+    } else if (config.getClientType() == ClientType.SENTINEL_MASTER_SLAVE) {
+      return redisson.getRedisNodes(RedisNodes.SENTINEL_MASTER_SLAVE).pingAll();
     }
     throw new IllegalStateException(
         "Ping is not supported for client type: " + config.getClientType());

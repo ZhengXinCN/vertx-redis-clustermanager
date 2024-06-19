@@ -61,8 +61,17 @@ public final class RedissonContext {
 
     if (config.getClientType() == ClientType.STANDALONE) {
       redisConfig.useSingleServer().setAddress(config.getEndpoints().get(0));
+    } else if (config.getClientType() == ClientType.CLUSTER) {
+      redisConfig.useClusterServers().setNodeAddresses(config.getEndpoints());
+    } else if (config.getClientType() == ClientType.REPLICATED) {
+      redisConfig.useReplicatedServers().setNodeAddresses(config.getEndpoints());
+    } else if (config.getClientType() == ClientType.MASTER_SLAVE) {
+      //TODO: slave node address
+      redisConfig.useMasterSlaveServers().setMasterAddress(config.getEndpoints().get(0));
+    } else if (config.getClientType() == ClientType.SENTINEL_MASTER_SLAVE) {
+      redisConfig.useSentinelServers().setSentinelAddresses(config.getEndpoints());
     } else {
-      throw new IllegalStateException("RedissonContext only supports STANDALONE client");
+     throw new IllegalStateException("ClientType not support: " + config.getClientType());
     }
 
     if (config.isUseConnectionListener()) {
@@ -88,9 +97,9 @@ public final class RedissonContext {
     try (var ignored = lock(lock)) {
       if (client == null) {
         client = Redisson.create(redisConfig);
-        lockReleaseExec =
-            Executors.newCachedThreadPool(
-                Thread.ofPlatform().name("vertx-redis-service-release-lock-thread", 1).factory());
+//        lockReleaseExec =
+//            Executors.newCachedThreadPool(
+//                Thread.ofPlatform().name("vertx-redis-service-release-lock-thread", 1).factory());
       }
       return client;
     }
