@@ -5,6 +5,7 @@ import static java.util.Collections.unmodifiableList;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.json.JsonObject;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,6 +43,8 @@ public class RedisConfig {
   /** Use connection listener. */
   private boolean useConnectionListener;
 
+  @Nullable private String password = null;
+
   /** Create the default configuration from existing environment variables. */
   public RedisConfig() {
     defaultEndpoint = RedisConfigProps.getDefaultEndpoint().toASCIIString();
@@ -59,6 +62,7 @@ public class RedisConfig {
     defaultEndpoint = other.defaultEndpoint;
     type = other.type;
     keyNamespace = other.keyNamespace;
+    password = other.password;
     endpoints = new ArrayList<>(other.endpoints);
     useConnectionListener = other.useConnectionListener;
     other.maps.stream().map(MapConfig::new).forEach(maps::add);
@@ -93,6 +97,24 @@ public class RedisConfig {
    */
   public String getKeyNamespace() {
     return keyNamespace == null ? "" : keyNamespace;
+  }
+
+  /**
+   * Set the password
+   *
+   * @param password the passworde
+   * @return fluent self
+   */
+  public RedisConfig setPassword(String password) {
+    this.password = password;
+    return this;
+  }
+
+  /**
+   * @return the password
+   */
+  public String getPassword() {
+    return password == null ? "" : password;
   }
 
   /**
@@ -258,6 +280,7 @@ public class RedisConfig {
     RedisConfig that = (RedisConfig) o;
     return type == that.type
         && Objects.equals(keyNamespace, that.keyNamespace)
+        && Objects.equals(password, that.password)
         && defaultEndpoint.equals(that.defaultEndpoint)
         && endpoints.equals(that.endpoints)
         && useConnectionListener == that.useConnectionListener
@@ -268,7 +291,7 @@ public class RedisConfig {
   @Override
   public int hashCode() {
     return Objects.hash(
-        type, keyNamespace, defaultEndpoint, endpoints, useConnectionListener, maps, locks);
+        type, keyNamespace, password, defaultEndpoint, endpoints, useConnectionListener, maps, locks);
   }
 
   @Override
