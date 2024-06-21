@@ -68,18 +68,28 @@ public final class RedissonContext {
     if (config.getClientType() == ClientType.STANDALONE) {
       SingleServerConfig singleServerConfig = redisConfig.useSingleServer();
       singleServerConfig.setAddress(config.getEndpoints().get(0));
+
+      if (StringUtil.isNotEmpty(config.getUsername())) {
+        singleServerConfig.setUsername(config.getUsername());
+      }
       if (StringUtil.isNotEmpty(config.getPassword())) {
         singleServerConfig.setPassword(config.getPassword());
       }
     } else if (config.getClientType() == ClientType.CLUSTER) {
       ClusterServersConfig clusterServersConfig = redisConfig.useClusterServers();
       clusterServersConfig.setNodeAddresses(config.getEndpoints());
+      if (StringUtil.isNotEmpty(config.getUsername())) {
+        clusterServersConfig.setUsername(config.getUsername());
+      }
       if (StringUtil.isNotEmpty(config.getPassword())) {
         clusterServersConfig.setPassword(config.getPassword());
       }
     } else if (config.getClientType() == ClientType.REPLICATED) {
       ReplicatedServersConfig replicatedServersConfig = redisConfig.useReplicatedServers();
       replicatedServersConfig.setNodeAddresses(config.getEndpoints());
+      if (StringUtil.isNotEmpty(config.getUsername())) {
+        replicatedServersConfig.setUsername(config.getUsername());
+      }
       if (StringUtil.isNotEmpty(config.getPassword())) {
         replicatedServersConfig.setPassword(config.getPassword());
       }

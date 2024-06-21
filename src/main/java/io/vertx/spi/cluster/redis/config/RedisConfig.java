@@ -44,6 +44,8 @@ public class RedisConfig {
   private boolean useConnectionListener;
 
   @Nullable private String password = null;
+  @Nullable private String username = null;
+
 
   /** Create the default configuration from existing environment variables. */
   public RedisConfig() {
@@ -63,6 +65,7 @@ public class RedisConfig {
     type = other.type;
     keyNamespace = other.keyNamespace;
     password = other.password;
+    username = other.username;
     endpoints = new ArrayList<>(other.endpoints);
     useConnectionListener = other.useConnectionListener;
     other.maps.stream().map(MapConfig::new).forEach(maps::add);
@@ -102,7 +105,7 @@ public class RedisConfig {
   /**
    * Set the password
    *
-   * @param password the passworde
+   * @param password the password
    * @return fluent self
    */
   public RedisConfig setPassword(String password) {
@@ -115,6 +118,24 @@ public class RedisConfig {
    */
   public String getPassword() {
     return password == null ? "" : password;
+  }
+
+  /**
+   * Set the username
+   *
+   * @param username the username
+   * @return fluent self
+   */
+  public RedisConfig setUsername(String username) {
+    this.username = username;
+    return this;
+  }
+
+  /**
+   * @return the password
+   */
+  public String getUsername() {
+    return username == null ? "" : username;
   }
 
   /**
@@ -281,6 +302,7 @@ public class RedisConfig {
     return type == that.type
         && Objects.equals(keyNamespace, that.keyNamespace)
         && Objects.equals(password, that.password)
+        && Objects.equals(username, that.username)
         && defaultEndpoint.equals(that.defaultEndpoint)
         && endpoints.equals(that.endpoints)
         && useConnectionListener == that.useConnectionListener
@@ -291,11 +313,12 @@ public class RedisConfig {
   @Override
   public int hashCode() {
     return Objects.hash(
-        type, keyNamespace, password, defaultEndpoint, endpoints, useConnectionListener, maps, locks);
+        type, keyNamespace, username, password, defaultEndpoint, endpoints, useConnectionListener, maps, locks);
   }
 
   @Override
   public String toString() {
     return toJson().encodePrettily();
   }
+
 }
