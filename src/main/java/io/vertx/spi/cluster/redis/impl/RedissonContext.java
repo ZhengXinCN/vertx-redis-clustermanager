@@ -19,7 +19,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import jodd.util.StringUtil;
-import jodd.util.concurrent.ThreadFactoryBuilder;
+import jodd.util.ThreadFactoryBuilder;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.ClusterServersConfig;
@@ -68,7 +68,9 @@ public final class RedissonContext {
     if (config.getClientType() == ClientType.STANDALONE) {
       SingleServerConfig singleServerConfig = redisConfig.useSingleServer();
       singleServerConfig.setAddress(config.getEndpoints().get(0));
-
+      singleServerConfig.setTimeout(10_000);
+      singleServerConfig.setRetryAttempts(5);
+      singleServerConfig.setRetryInterval(1_000);
       if (StringUtil.isNotEmpty(config.getUsername())) {
         singleServerConfig.setUsername(config.getUsername());
       }
@@ -78,6 +80,9 @@ public final class RedissonContext {
     } else if (config.getClientType() == ClientType.CLUSTER) {
       ClusterServersConfig clusterServersConfig = redisConfig.useClusterServers();
       clusterServersConfig.setNodeAddresses(config.getEndpoints());
+      clusterServersConfig.setTimeout(10_000);
+      clusterServersConfig.setRetryAttempts(5);
+      clusterServersConfig.setRetryInterval(1_000);
       if (StringUtil.isNotEmpty(config.getUsername())) {
         clusterServersConfig.setUsername(config.getUsername());
       }
@@ -87,6 +92,9 @@ public final class RedissonContext {
     } else if (config.getClientType() == ClientType.REPLICATED) {
       ReplicatedServersConfig replicatedServersConfig = redisConfig.useReplicatedServers();
       replicatedServersConfig.setNodeAddresses(config.getEndpoints());
+      replicatedServersConfig.setTimeout(10_000);
+      replicatedServersConfig.setRetryAttempts(5);
+      replicatedServersConfig.setRetryInterval(1_000);
       if (StringUtil.isNotEmpty(config.getUsername())) {
         replicatedServersConfig.setUsername(config.getUsername());
       }
@@ -121,7 +129,7 @@ public final class RedissonContext {
       if (client == null) {
         client = Redisson.create(redisConfig);
         final ThreadFactory threadFactory = ThreadFactoryBuilder.create()
-                .setNameFormat("vertx-redis-service-release-lock-thread").get();
+                .withNameFormat("vertx-redis-service-release-lock-thread").get();
         lockReleaseExec = Executors.newCachedThreadPool(threadFactory);
 
 // TODO use follow code when use Java21
