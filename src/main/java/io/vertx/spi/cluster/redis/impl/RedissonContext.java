@@ -13,13 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import jodd.util.StringUtil;
-import jodd.util.ThreadFactoryBuilder;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.ClusterServersConfig;
@@ -83,6 +81,7 @@ public final class RedissonContext {
       clusterServersConfig.setTimeout(10_000);
       clusterServersConfig.setRetryAttempts(5);
       clusterServersConfig.setRetryInterval(1_000);
+
       if (StringUtil.isNotEmpty(config.getUsername())) {
         clusterServersConfig.setUsername(config.getUsername());
       }
@@ -95,6 +94,7 @@ public final class RedissonContext {
       replicatedServersConfig.setTimeout(10_000);
       replicatedServersConfig.setRetryAttempts(5);
       replicatedServersConfig.setRetryInterval(1_000);
+
       if (StringUtil.isNotEmpty(config.getUsername())) {
         replicatedServersConfig.setUsername(config.getUsername());
       }
@@ -128,9 +128,10 @@ public final class RedissonContext {
     try (var ignored = lock(lock)) {
       if (client == null) {
         client = Redisson.create(redisConfig);
-        final ThreadFactory threadFactory = ThreadFactoryBuilder.create()
-                .withNameFormat("vertx-redis-service-release-lock-thread").get();
-        lockReleaseExec = Executors.newCachedThreadPool(threadFactory);
+        client = Redisson.create(redisConfig);
+        lockReleaseExec =
+                Executors.newCachedThreadPool(
+                        r -> new Thread(r, "vertx-redis-service-release-lock-thread"));
 
 // TODO use follow code when use Java21
 //        lockReleaseExec =
